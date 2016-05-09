@@ -6,7 +6,7 @@
  * \brief Enhanced exception handling method (eEHM).
  */
 
-#include "../include/eEHM.h"
+#include "./eEHM.h"
 
 jmp_buf fpe_buf;
 jmp_buf segv_buf;
@@ -97,63 +97,63 @@ eEHM::~eEHM() {
 
 void eEHM::SetUserHandler(int signalID) {
     switch (signalID) {
-    case SIGFPE:
-        sigfpe_handler = signal(SIGFPE, user_fpe);
-        if (SIG_ERR == sigfpe_handler) {
-            throw signal_error(0, "Set user handler for SIGFPE failed.");
-        }
-        if (setjmp(fpe_buf)) {
-            throw signal_error(SIGFPE, std::string("SIGFPE: ") + GetTrace());
-        }
-        break;
-    case SIGSEGV:
-        sigsegv_handler = signal(SIGSEGV, user_segv);
-        if (SIG_ERR == sigsegv_handler) {
-            throw signal_error(0, "Set user handler for SIGSEGV failed.");
-        }
-        if (setjmp(segv_buf)) {
-            throw signal_error(SIGSEGV, std::string("SIGSEGV: ") + GetTrace());
-        }
-        break;
-    case SIGINT:
-        sigint_handler = signal(SIGINT, user_int);
-        if (SIG_ERR == sigint_handler) {
-            throw signal_error(0, "Set user handler for SIGINT failed.");
-        }
-        if (setjmp(int_buf)) {
-            throw signal_error(SIGINT, std::string("SIGINT: ") + GetTrace());
-        }
-        break;
-    case SIGTERM:
-        sigterm_handler = signal(SIGTERM, user_term);
-        if (SIG_ERR == sigterm_handler) {
-            throw signal_error(0, "Set user handler for SIGTERM failed.");
-        }
-        if (setjmp(term_buf)) {
-            throw signal_error(SIGTERM, std::string("SIGTERM: ") + GetTrace());
-        }
-        break;
-    case SIGABRT:
-        sigabrt_handler = signal(SIGABRT, user_abrt);
-        if (SIG_ERR == sigabrt_handler) {
-            throw signal_error(0, "Set user handler for SIGABRT failed.");
-        }
-        if (setjmp(abrt_buf)) {
-            throw signal_error(SIGABRT, std::string("SIGABRT: ") + GetTrace());
-        }
-        break;
-    case SIGILL:
-        sigill_handler = signal(SIGILL, user_ill);
-        if (SIG_ERR == sigill_handler) {
-            throw signal_error(0, "Set user handler for SIGILL failed.");
-        }
-        if (setjmp(ill_buf)) {
-            throw signal_error(SIGILL, std::string("SIGILL: ") + GetTrace());
-        }
-        break;
-    default:
-        throw signal_error(0, "Unknown signalID.");
-        break;
+      case SIGFPE:
+          sigfpe_handler = signal(SIGFPE, user_fpe);
+          if (SIG_ERR == sigfpe_handler) {
+              throw signal_error(0, "Set user handler for SIGFPE failed.");
+          }
+          if (setjmp(fpe_buf)) {
+              throw signal_error(SIGFPE, std::string("SIGFPE: ") + GetTrace());
+          }
+          break;
+      case SIGSEGV:
+          sigsegv_handler = signal(SIGSEGV, user_segv);
+          if (SIG_ERR == sigsegv_handler) {
+              throw signal_error(0, "Set user handler for SIGSEGV failed.");
+          }
+          if (setjmp(segv_buf)) {
+              throw signal_error(SIGSEGV, std::string("SIGSEGV: ") + GetTrace());
+          }
+          break;
+      case SIGINT:
+          sigint_handler = signal(SIGINT, user_int);
+          if (SIG_ERR == sigint_handler) {
+              throw signal_error(0, "Set user handler for SIGINT failed.");
+          }
+          if (setjmp(int_buf)) {
+              throw signal_error(SIGINT, std::string("SIGINT: ") + GetTrace());
+          }
+          break;
+      case SIGTERM:
+          sigterm_handler = signal(SIGTERM, user_term);
+          if (SIG_ERR == sigterm_handler) {
+              throw signal_error(0, "Set user handler for SIGTERM failed.");
+          }
+          if (setjmp(term_buf)) {
+              throw signal_error(SIGTERM, std::string("SIGTERM: ") + GetTrace());
+          }
+          break;
+      case SIGABRT:
+          sigabrt_handler = signal(SIGABRT, user_abrt);
+          if (SIG_ERR == sigabrt_handler) {
+              throw signal_error(0, "Set user handler for SIGABRT failed.");
+          }
+          if (setjmp(abrt_buf)) {
+              throw signal_error(SIGABRT, std::string("SIGABRT: ") + GetTrace());
+          }
+          break;
+      case SIGILL:
+          sigill_handler = signal(SIGILL, user_ill);
+          if (SIG_ERR == sigill_handler) {
+              throw signal_error(0, "Set user handler for SIGILL failed.");
+          }
+          if (setjmp(ill_buf)) {
+              throw signal_error(SIGILL, std::string("SIGILL: ") + GetTrace());
+          }
+          break;
+      default:
+          throw signal_error(0, "Unknown signalID.");
+          break;
     }
 }
 
@@ -166,12 +166,12 @@ std::string eEHM::GetTrace(void) {
     void *records[TRACE_DEPTH];
     size_t valid_depth;
     char **contents;
-    char msg[255];
+    char msg1[1024], msg2[1024];
     std::string result;
 
     valid_depth = backtrace(records, TRACE_DEPTH);
-    snprintf(msg, 255, "backtrace %ld records:\n", valid_depth);
-    result.assign(msg);
+    snprintf(msg1, 1024, "backtrace %ld records:\n", valid_depth);
+    result.assign(msg1);
     if (!valid_depth) {
         return result;
     }
@@ -179,13 +179,13 @@ std::string eEHM::GetTrace(void) {
     contents = backtrace_symbols(records, valid_depth);
     std::string record;
     for (size_t i = 2; i < valid_depth; ++i) {
-        snprintf(msg, 255, "%3ld:", i);
+        snprintf(msg1, 1024, "%3ld:", i);
 
         record.assign(contents[i]);
 
         std::string::size_type begin = record.find('(');
         if (std::string::npos == begin) {
-            result += msg + record + "\n";
+            result += msg1 + record + "\n";
             continue;
         }
         std::string exec_file = record.substr(0, begin);
@@ -202,7 +202,7 @@ std::string eEHM::GetTrace(void) {
         }
         std::string address = record.substr(begin + 1, end - begin - 1);
 
-        result += msg + record + "\n";
+        result += msg1 + record + "\n";
 
         record.assign("addr2line -f -s -i -C -p -e ");
         record += exec_file;
@@ -213,10 +213,18 @@ std::string eEHM::GetTrace(void) {
         if (NULL == tmp) {
             continue;
         }
-        fgets(msg, 255, tmp);
+        while (!feof(tmp)) {
+            strcpy(msg1, "");
+            fgets(msg1, 1024, tmp);
+            if ((strlen(msg1) > 1) && (msg1[0] == ' ')) {
+                strncpy(msg2, msg1 + 1, strlen(msg1) - 1);
+                msg2[strlen(msg1) - 1] = '\0';
+                strcpy(msg1, msg2);
+            }
+            if (strlen(msg1))
+                result += std::string("    ") + msg1;
+        }
         pclose(tmp);
-
-        result += std::string("    ") + msg;
     }
 
     free(contents);
@@ -228,7 +236,7 @@ signal_error::signal_error(int code, std::string desc) {
     this->desc = desc;
 }
 
-const char * signal_error::what() const throw() {
+const char* signal_error::what() const throw() {
     return desc.c_str();
 }
 

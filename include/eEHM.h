@@ -13,6 +13,7 @@
 #include <execinfo.h>
 #include <cstdlib>
 #include <cstdio>
+#include <cstring>
 
 void user_fpe(int signalId);
 void user_segv(int signalId);
@@ -42,12 +43,9 @@ class eEHM {
 class signal_error : public std::exception {
  public:
     signal_error(int code = 0, std::string desc = "It seems ok.");
-    ~signal_error() throw() {};
-    const char * what() const throw();
+    ~signal_error() throw() { };
+    const char* what() const throw();
  private:
     int code;
     std::string desc;
 };
-
-
-
